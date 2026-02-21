@@ -1,25 +1,39 @@
-# OpenClaw for Financial Advisors - ForgeClaw Platform
-FROM node:18-alpine
+# ForgeClaw - OpenClaw for Financial Advisors
+# Option B: Official OpenClaw + FA Customization Layer
 
-# Set working directory
-WORKDIR /app
+# Use official OpenClaw as base (easy updates!)
+FROM ghcr.io/openclaw/openclaw:latest
 
-# Copy OpenClaw core
-COPY openclaw-core/ ./openclaw-core/
+# Switch to root for installations
+USER root
 
-# Copy FA skills packages
-COPY fa-skills-packages/ ./fa-skills-packages/
+# Add FA-specific skills packages
+COPY fa-skills-packages/ /app/skills/fa/
 
-# Install dependencies
-WORKDIR /app/openclaw-core
-RUN npm install
+# Add advisor configuration templates
+COPY advisor-configs/ /app/configs/advisors/
 
-# Expose port
-EXPOSE 8000
+# Add ForgeClaw branding and customizations
+COPY forgeclaw-theme/ /app/themes/forgeclaw/
 
-# Health check
+# Install additional dependencies for FA features
+RUN npm install --no-save \
+    @supabase/supabase-js \
+    neo4j-driver \
+    stripe
+
+# Environment variables for FA mode
+ENV FA_MODE=enabled
+ENV SKILLS_MARKETPLACE=enabled
+ENV THEME=forgeclaw
+ENV BRAND=ForgeClaw
+
+# Health check (inherit from base OpenClaw)
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+  CMD curl -f http://localhost:8080/health || exit 1
 
-# Start OpenClaw
-CMD ["npm", "start"]
+# Switch back to app user
+USER app
+
+# Use OpenClaw's existing start command
+# Base image handles: CMD ["npm", "start"]
