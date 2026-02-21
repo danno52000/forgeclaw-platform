@@ -1,0 +1,34 @@
+{
+  "name": "forgeclaw-platform",
+  "version": "0.1.0",
+  "description": "One-click OpenClaw deployment platform for Financial Advisors",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd forgeclaw-portal && npm run dev",
+    "build": "cd forgeclaw-portal && npm run build",
+    "deploy-advisor": "node automation-scripts/deploy-advisor.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danno52000/forgeclaw-platform.git"
+  },
+  "keywords": [
+    "openclaw",
+    "financial-advisors",
+    "ai-agents",
+    "fintech",
+    "automation"
+  ],
+  "author": "IDX / ForgeClaw",
+  "license": "MIT",
+  "dependencies": {
+    "@northflank/js-client": "^1.0.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "nodemon": "^3.0.0"
+  }
+}
