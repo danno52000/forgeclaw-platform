@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom global styles for ForgeClaw dark financial theme */
+html {
+  /* Force dark theme */
+  color-scheme: dark;
+}
+
+body {
+  color: rgb(255 255 255);
+  background: linear-gradient(to bottom right, rgb(15 23 42), rgb(30 58 138), rgb(15 23 42));
+  min-height: 100vh;
+}
+
+/* Ensure smooth transitions */
+* {
+  transition: colors 200ms ease-in-out;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(30 41 59);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(71 85 105);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(100 116 139);
+}
