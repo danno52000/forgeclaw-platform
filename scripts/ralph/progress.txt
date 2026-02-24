@@ -1,0 +1,34 @@
+# Build Progress Log
+Started: 2026-02-24
+Feature: ForgeClaw API Validation Debugging Fix
+Parent Task: 262
+
+## Codebase Patterns
+- Backend API is Express + Joi validation in portal-api/src/routes/
+- Frontend is Next.js in forgeclaw-portal/src/pages/
+- API base URL configured in forgeclaw-portal/src/config/api.ts (Render for prod, localhost:3001 for dev)
+- Joi schemas defined at top of route files, validated inline in route handlers
+- Frontend uses native fetch, not axios
+---
+
+## 2026-02-24 - Task 263: Add stripUnknown to backend Joi validation
+Thread: https://ampcode.com/threads/T-019c9185-291f-728a-a583-e15c77971220
+Task ID: 263
+- Added `{ stripUnknown: true }` as second arg to both `validate()` calls in portal-api/src/routes/advisors.ts
+  - Line 44: createAdvisorSchema.validate(req.body, { stripUnknown: true })
+  - Line 185: updateSkillsSchema.validate(req.body, { stripUnknown: true })
+- Files changed: portal-api/src/routes/advisors.ts
+- Commit: 8a5e522
+- **Learnings:** Git 2.25.1 on this VM doesn't support --trailer flag; use -F with a temp file instead.
+---
+
+## 2026-02-24 - Task 264: Surface Joi validation details in frontend error UI
+Thread: https://ampcode.com/threads/T-019c9185-291f-728a-a583-e15c77971220
+Task ID: 264
+- Changed error handler in forgeclaw-portal/src/pages/signup.tsx (lines 142-146)
+- Now joins errorData.details array into a comma-separated string and uses it as the error message
+- Falls back to errorData.error, then generic message
+- Files changed: forgeclaw-portal/src/pages/signup.tsx
+- Commit: 72442da
+- **Learnings:** Frontend error display uses `setError(error.message)` at line 154, so throwing with the details string surfaces it in the red error banner.
+---
