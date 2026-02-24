@@ -14,20 +14,20 @@ const createAdvisorSchema = Joi.object({
   lastName: Joi.string().required().min(1).max(50),
   email: Joi.string().email().required(),
   company: Joi.string().required().min(1).max(100),
-  phone: Joi.string().optional(),
+  phone: Joi.string().allow('').optional(),
   
   // Practice Info  
-  practiceType: Joi.string().optional(),
-  aum: Joi.string().optional(),
-  clientCount: Joi.string().optional(),
-  primaryCustodian: Joi.string().optional(),
+  practiceType: Joi.string().allow('').optional(),
+  aum: Joi.string().allow('').optional(),
+  clientCount: Joi.string().allow('').optional(),
+  primaryCustodian: Joi.string().allow('').optional(),
   
   // Configuration
   subdomain: Joi.string().required().min(3).max(30).pattern(/^[a-z0-9-]+$/),
   anthropicApiKey: Joi.string().required().min(10),
   selectedPackage: Joi.string().valid("core", "professional", "enterprise").required(),
   additionalSkills: Joi.array().items(Joi.string()).default([]),
-  dataRetention: Joi.string().optional()
+  dataRetention: Joi.string().allow('').optional()
 });
 
 const updateSkillsSchema = Joi.object({
