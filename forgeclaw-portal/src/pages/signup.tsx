@@ -1,6 +1,8 @@
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import { API_BASE_URL } from '../config/api'
 import { ChevronLeftIcon, CheckIcon } from '@heroicons/react/24/outline'
 
 interface SkillPackage {
@@ -60,6 +62,9 @@ const skillPackages: SkillPackage[] = [
 
 export default function Signup() {
   const [currentStep, setCurrentStep] = useState(1)
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     // Step 1: Basic Info
     firstName: '',
@@ -101,9 +106,55 @@ export default function Signup() {
   }
 
   const handleSubmit = async () => {
-    // This will integrate with Northflank API and Stripe
-    console.log('Creating advisor instance:', formData)
-    // Redirect to dashboard or instance URL
+    setIsLoading(true)
+    setError('')
+    
+    try {
+      // Create advisor account
+      const response = await fetch(`${API_BASE_URL}/api/advisors/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Basic info
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          company: formData.company,
+          phone: formData.phone,
+          
+          // Practice info
+          practiceType: formData.practiceType,
+          aum: formData.aum,
+          clientCount: formData.clientCount,
+          primaryCustodian: formData.primaryCustodian,
+          
+          // Configuration
+          subdomain: formData.subdomain,
+          selectedPackage: formData.selectedPackage,
+          additionalSkills: formData.additionalSkills,
+          anthropicApiKey: formData.anthropicApiKey,
+          dataRetention: formData.dataRetention
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create advisor instance')
+      }
+
+      const result = await response.json()
+      
+      // Redirect to dashboard or success page
+      router.push('/dashboard')
+      
+    } catch (error) {
+      console.error('Error creating advisor instance:', error)
+      setError(error instanceof Error ? error.message : 'Failed to create your instance. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -256,6 +307,12 @@ export default function Signup() {
               </div>
             )}
 
+            {error && (
+              <div className="bg-red-900/50 border border-red-600 text-red-200 px-4 py-3 rounded-md mb-6">
+                {error}
+              </div>
+            )}
+
             {/* Navigation Buttons */}
             <div className="flex justify-between mt-8">
               <button
@@ -269,9 +326,10 @@ export default function Signup() {
               {currentStep === 4 ? (
                 <button
                   onClick={handleSubmit}
-                  className="px-8 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium"
+                  disabled={isLoading}
+                  className="px-8 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Create My Instance
+                  { isLoading ? 'Creating Instance...' : 'Create My Instance' }
                 </button>
               ) : (
                 <button

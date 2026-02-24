@@ -43,7 +43,8 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'https://forgeclaw.com',
-    'https://portal.forgeclaw.com'
+    'https://portal.forgeclaw.com',
+    'https://forgeclaw-platform.vercel.app'
   ],
   credentials: true
 }));
