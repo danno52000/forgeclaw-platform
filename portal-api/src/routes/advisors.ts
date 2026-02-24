@@ -41,7 +41,7 @@ const updateSkillsSchema = Joi.object({
 router.post('/', async (req, res) => {
   try {
     // Validate request body
-    const { error, value } = createAdvisorSchema.validate(req.body);
+    const { error, value } = createAdvisorSchema.validate(req.body, { stripUnknown: true });
     if (error) {
       return res.status(400).json({
         error: 'Validation failed',
@@ -182,7 +182,7 @@ router.put('/:advisorId/skills', async (req, res) => {
     const { advisorId } = req.params;
     
     // Validate request body
-    const { error, value } = updateSkillsSchema.validate(req.body);
+    const { error, value } = updateSkillsSchema.validate(req.body, { stripUnknown: true });
     if (error) {
       return res.status(400).json({
         error: 'Validation failed',
