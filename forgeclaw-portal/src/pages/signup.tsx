@@ -111,7 +111,7 @@ export default function Signup() {
     
     try {
       // Create advisor account
-      const response = await fetch(`${API_BASE_URL}/api/advisors/create`, {
+      const response = await fetch(`${API_BASE_URL}/api/advisors`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
