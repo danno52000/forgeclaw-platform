@@ -32,3 +32,12 @@ Task ID: 264
 - Commit: 72442da
 - **Learnings:** Frontend error display uses `setError(error.message)` at line 154, so throwing with the details string surfaces it in the red error banner.
 ---
+
+## 2026-02-24 - Frontend Form Completion: Step 2 & Step 4
+Thread: https://ampcode.com/threads/T-019c9185-291f-728a-a583-e15c77971220
+- Added Step 2 (Practice Details): practiceType, aum, clientCount, primaryCustodian — all as <select> dropdowns matching the optional Joi schema fields
+- Added Step 4 (Configuration): subdomain (with inline .forgeclaw.com suffix + regex sanitizer), anthropicApiKey (password field), dataRetention (select dropdown defaulting to 90)
+- Subdomain input auto-strips invalid chars via onChange: `.toLowerCase().replace(/[^a-z0-9-]/g, '')`
+- Files changed: forgeclaw-portal/src/pages/signup.tsx
+- **Learnings:** The form already had all state fields defined (lines 68-90), just missing the JSX render sections. Step 2 fields are all optional per backend Joi schema (.allow('').optional()), Step 4 subdomain + anthropicApiKey are required.
+---
