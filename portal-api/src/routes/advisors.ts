@@ -9,15 +9,25 @@ const logger = createLogger({ level: 'info' });
 
 // Validation schemas
 const createAdvisorSchema = Joi.object({
+  // Basic Info
   firstName: Joi.string().required().min(1).max(50),
   lastName: Joi.string().required().min(1).max(50),
   email: Joi.string().email().required(),
   company: Joi.string().required().min(1).max(100),
   phone: Joi.string().optional(),
+  
+  // Practice Info  
+  practiceType: Joi.string().optional(),
+  aum: Joi.string().optional(),
+  clientCount: Joi.string().optional(),
+  primaryCustodian: Joi.string().optional(),
+  
+  // Configuration
   subdomain: Joi.string().required().min(3).max(30).pattern(/^[a-z0-9-]+$/),
   anthropicApiKey: Joi.string().required().min(10),
-  selectedPackage: Joi.string().valid('core', 'professional', 'enterprise').required(),
-  additionalSkills: Joi.array().items(Joi.string()).default([])
+  selectedPackage: Joi.string().valid("core", "professional", "enterprise").required(),
+  additionalSkills: Joi.array().items(Joi.string()).default([]),
+  dataRetention: Joi.string().optional()
 });
 
 const updateSkillsSchema = Joi.object({
@@ -44,10 +54,16 @@ router.post('/', async (req, res) => {
       lastName,
       email,
       company,
+      phone,
+      practiceType,
+      aum,
+      clientCount,
+      primaryCustodian,
       subdomain,
       anthropicApiKey,
       selectedPackage,
-      additionalSkills
+      additionalSkills,
+      dataRetention
     } = value;
 
     // Check if subdomain is already taken
