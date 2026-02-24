@@ -141,7 +141,8 @@ export default function Signup() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create advisor instance')
+        const detailMsg = errorData.details?.join(', ') || ''
+        throw new Error(detailMsg || errorData.error || 'Failed to create advisor instance')
       }
 
       const result = await response.json()
