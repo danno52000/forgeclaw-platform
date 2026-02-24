@@ -28,10 +28,9 @@ RUN git clone https://github.com/openclaw/openclaw.git .
 # Install dependencies (cached unless package files change)
 RUN pnpm install --frozen-lockfile
 
-# Build OpenClaw
-RUN pnpm build
-RUN pnpm ui:install
+# Build OpenClaw (ui:build auto-installs UI deps on first run)
 RUN pnpm ui:build
+RUN pnpm build
 
 # Copy FA customization files
 COPY fa-skills-packages/ ./workspace/skills/fa/
@@ -56,7 +55,7 @@ RUN groupadd -g 1000 openclaw && useradd -u 1000 -g openclaw -m openclaw
 RUN chown -R openclaw:openclaw /app
 USER openclaw
 
-# Expose OpenClaw port
+# Expose OpenClaw port (correct port is 18789)
 EXPOSE 18789
 
 # Health check
@@ -64,4 +63,4 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD curl -f http://localhost:18789/health || exit 1
 
 # Start OpenClaw Gateway
-CMD ["node", "dist/index.js", "gateway", "--allow-unconfigured"]
+CMD ["node", "dist/index.js", "gateway", "--allow-unconfigured", "--port", "18789"]
