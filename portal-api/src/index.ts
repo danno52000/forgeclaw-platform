@@ -41,6 +41,7 @@ const logger = createLogger({
 app.use(helmet());
 app.use(cors({
   origin: [
+    /.*\.vercel\.app$/,
     'http://localhost:3000',
     'https://forgeclaw.com',
     'https://portal.forgeclaw.com',
