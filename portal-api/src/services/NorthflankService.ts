@@ -48,6 +48,10 @@ export class NorthflankService {
   };
 
   constructor() {
+    if (!this.config.apiToken) {
+      this.logger.error('NORTHFLANK_API_TOKEN is not set. Northflank API calls will fail.');
+    }
+
     this.client = axios.create({
       baseURL: this.config.baseUrl,
       headers: {
@@ -64,10 +68,19 @@ export class NorthflankService {
         return response;
       },
       (error) => {
-        this.logger.error(`Northflank API Error: ${error.response?.status} - ${error.message}`);
+        const detail = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+        this.logger.error(`Northflank API Error: ${error.response?.status} - ${detail}`);
         return Promise.reject(error);
       }
     );
+  }
+
+  private extractErrorMessage(error: any): string {
+    if (error.response?.data) {
+      const data = error.response.data;
+      return data.error?.message || data.message || JSON.stringify(data);
+    }
+    return error.message || String(error);
   }
 
   /**
@@ -99,7 +112,7 @@ export class NorthflankService {
       };
     } catch (error) {
       this.logger.error('Error fetching build status:', error);
-      throw new Error('Failed to fetch build status');
+      throw new Error(`Failed to fetch build status: ${this.extractErrorMessage(error)}`);
     }
   }
 
@@ -122,7 +135,7 @@ export class NorthflankService {
       };
     } catch (error) {
       this.logger.error('Error triggering build:', error);
-      throw new Error('Failed to trigger build');
+      throw new Error(`Failed to trigger build: ${this.extractErrorMessage(error)}`);
     }
   }
 
@@ -152,24 +165,24 @@ export class NorthflankService {
             ephemeralStorage: {
               storageSize: this.getTierStorageSize(config.tier)
             }
+          },
+          internal: {
+            id: this.config.buildServiceId,
+            branch: 'master',
+            buildSHA: 'latest'
           }
         },
-        runtimeEnvironment: [
-          { name: 'ANTHROPIC_API_KEY', value: config.anthropicApiKey },
-          { name: 'ADVISOR_ID', value: config.advisorId },
-          { name: 'ADVISOR_NAME', value: config.name },
-          { name: 'ADVISOR_EMAIL', value: config.email },
-          { name: 'ADVISOR_COMPANY', value: config.company },
-          { name: 'SKILLS_ENABLED', value: config.skills.join(',') },
-          { name: 'FA_MODE', value: 'enabled' },
-          { name: 'BRAND', value: 'ForgeClaw' },
-          { name: 'TIER', value: config.tier },
-          { name: 'CUSTOM_DOMAIN', value: `${config.subdomain}.forgeclaw.com` }
-        ],
-        internal: {
-          id: this.config.buildServiceId,
-          branch: 'master',
-          buildSHA: 'latest'
+        runtimeEnvironment: {
+          ANTHROPIC_API_KEY: config.anthropicApiKey,
+          ADVISOR_ID: config.advisorId,
+          ADVISOR_NAME: config.name,
+          ADVISOR_EMAIL: config.email,
+          ADVISOR_COMPANY: config.company,
+          SKILLS_ENABLED: config.skills.join(','),
+          FA_MODE: 'enabled',
+          BRAND: 'ForgeClaw',
+          TIER: config.tier,
+          CUSTOM_DOMAIN: `${config.subdomain}.forgeclaw.com`
         }
       };
 
@@ -200,7 +213,7 @@ export class NorthflankService {
       };
     } catch (error) {
       this.logger.error('Error creating advisor instance:', error);
-      throw new Error(`Failed to create advisor instance: ${error}`);
+      throw new Error(`Failed to create advisor instance: ${this.extractErrorMessage(error)}`);
     }
   }
 
@@ -235,9 +248,9 @@ export class NorthflankService {
   async updateAdvisorSkills(advisorServiceId: string, skills: string[]): Promise<void> {
     try {
       const updatePayload = {
-        runtimeEnvironment: [
-          { name: 'SKILLS_ENABLED', value: skills.join(',') }
-        ]
+        runtimeEnvironment: {
+          SKILLS_ENABLED: skills.join(',')
+        }
       };
 
       await this.client.post(
@@ -248,7 +261,7 @@ export class NorthflankService {
       this.logger.info(`Updated skills for advisor ${advisorServiceId}:`, skills);
     } catch (error) {
       this.logger.error('Error updating advisor skills:', error);
-      throw new Error('Failed to update advisor skills');
+      throw new Error(`Failed to update advisor skills: ${this.extractErrorMessage(error)}`);
     }
   }
 
@@ -262,26 +275,21 @@ export class NorthflankService {
       );
 
       const service = response.data.data;
-      const envVars = service.runtimeEnvironment || [];
-      
-      const getEnvValue = (name: string) => {
-        const envVar = envVars.find((env: any) => env.name === name);
-        return envVar?.value || '';
-      };
+      const envVars = service.runtimeEnvironment || {};
 
-      const skillsEnabled = getEnvValue('SKILLS_ENABLED').split(',').filter(Boolean);
+      const skillsEnabled = (envVars.SKILLS_ENABLED || '').split(',').filter(Boolean);
 
       return {
         id: service.id,
-        name: getEnvValue('ADVISOR_NAME'),
-        subdomain: getEnvValue('CUSTOM_DOMAIN').replace('.forgeclaw.com', ''),
+        name: envVars.ADVISOR_NAME || '',
+        subdomain: (envVars.CUSTOM_DOMAIN || '').replace('.forgeclaw.com', ''),
         status: this.mapServiceStatus(service.status),
         createdAt: service.createdAt,
-        lastActivity: 'Unknown', // Would need additional API call to get this
+        lastActivity: 'Unknown',
         skillsEnabled,
-        storageUsed: 0, // Would need metrics API
+        storageUsed: 0,
         monthlyUsage: {
-          tokens: 0, // Would need usage API
+          tokens: 0,
           cost: 0
         }
       };
@@ -290,7 +298,7 @@ export class NorthflankService {
         return null;
       }
       this.logger.error('Error fetching advisor instance:', error);
-      throw new Error('Failed to fetch advisor instance');
+      throw new Error(`Failed to fetch advisor instance: ${this.extractErrorMessage(error)}`);
     }
   }
 
@@ -319,7 +327,7 @@ export class NorthflankService {
       return instances;
     } catch (error) {
       this.logger.error('Error listing advisor instances:', error);
-      throw new Error('Failed to list advisor instances');
+      throw new Error(`Failed to list advisor instances: ${this.extractErrorMessage(error)}`);
     }
   }
 
@@ -335,7 +343,7 @@ export class NorthflankService {
       this.logger.info(`Deleted advisor instance: ${serviceId}`);
     } catch (error) {
       this.logger.error('Error deleting advisor instance:', error);
-      throw new Error('Failed to delete advisor instance');
+      throw new Error(`Failed to delete advisor instance: ${this.extractErrorMessage(error)}`);
     }
   }
 

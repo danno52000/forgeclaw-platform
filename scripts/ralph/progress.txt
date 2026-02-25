@@ -41,3 +41,15 @@ Thread: https://ampcode.com/threads/T-019c9185-291f-728a-a583-e15c77971220
 - Files changed: forgeclaw-portal/src/pages/signup.tsx
 - **Learnings:** The form already had all state fields defined (lines 68-90), just missing the JSX render sections. Step 2 fields are all optional per backend Joi schema (.allow('').optional()), Step 4 subdomain + anthropicApiKey are required.
 ---
+
+## 2026-02-24 - Fix NorthflankService: runtimeEnvironment format, internal nesting, error handling
+Thread: https://ampcode.com/threads/T-019c9185-291f-728a-a583-e15c77971220
+- **Bug 1 (Critical):** runtimeEnvironment was sent as array of {name, value} objects; Northflank API requires a flat object {KEY: "value"}. Fixed in createAdvisorInstance and updateAdvisorSkills.
+- **Bug 2:** `internal` block (build service ref) was at top level of servicePayload; must be nested inside `deployment` per Northflank API docs.
+- **Bug 3:** getAdvisorInstance env var reader used array .find() pattern; updated to read from object format.
+- **Fix 3:** All error handlers now surface actual Northflank API error messages via extractErrorMessage() helper instead of generic strings.
+- **Fix 4:** Constructor logs a warning if NORTHFLANK_API_TOKEN is not set.
+- **Fix 5:** Route catch block in advisors.ts now includes `details` array so frontend displays the real error message.
+- Files changed: portal-api/src/services/NorthflankService.ts, portal-api/src/routes/advisors.ts
+- **Learnings:** Northflank API runtimeEnvironment is a flat object, NOT an array. The `internal` deployment source config must be nested inside the `deployment` object. Always check API docs against implementation.
+---

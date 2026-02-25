@@ -118,7 +118,8 @@ router.post('/', async (req, res) => {
     logger.error('Error creating advisor instance:', error);
     res.status(500).json({
       error: 'Failed to create advisor instance',
-      message: error.message
+      message: error.message,
+      details: [error.message]
     });
   }
 });
