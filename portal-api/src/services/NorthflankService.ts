@@ -197,11 +197,12 @@ export class NorthflankService {
         }
       };
 
-      this.logger.info(`Creating advisor deployment with SMALL resources:`, {
+      this.logger.info(`Creating advisor deployment with proper OpenClaw resources:`, {
+        tier: config.tier,
         plan: resourceConfig.plan,
-        ephemeralStorage: resourceConfig.ephemeralStorage,
         cpu: resourceConfig.cpu,
-        memory: resourceConfig.memory
+        memory: resourceConfig.memory,
+        ephemeralStorage: resourceConfig.ephemeralStorage
       });
 
       const response = await this.client.post(
@@ -235,27 +236,29 @@ export class NorthflankService {
     memory: number;
     ephemeralStorage: number;
   } {
+    // UPDATED: Resource allocations based on OpenClaw diagnostic data
+    // OpenClaw requires minimum 2+ vCPU and 2+ GB RAM to prevent crashes
     switch (tier) {
       case 'enterprise':
         return {
-          plan: 'nf-compute-50',
-          cpu: '0.5',
-          memory: 2048,
-          ephemeralStorage: 1536 // 1.5GB - REDUCED from previous version
+          plan: 'nf-compute-100',  // UPGRADED: Was nf-compute-50
+          cpu: '4.0',              // UPGRADED: Was 0.5
+          memory: 4096,            // UPGRADED: Was 2048
+          ephemeralStorage: 2048   // UPGRADED: Was 1536
         };
       case 'professional':
         return {
-          plan: 'nf-compute-20',
-          cpu: '0.25',
-          memory: 1536,
-          ephemeralStorage: 1024 // 1GB - REDUCED
+          plan: 'nf-compute-50',   // UPGRADED: Was nf-compute-20
+          cpu: '2.0',              // UPGRADED: Was 0.25
+          memory: 2048,            // MAINTAINED: Was 1536 -> now 2048 minimum
+          ephemeralStorage: 1536   // UPGRADED: Was 1024
         };
       default: // core
         return {
-          plan: 'nf-compute-10',
-          cpu: '0.1',
-          memory: 1024,
-          ephemeralStorage: 512 // 512MB - MUCH SMALLER for core tier
+          plan: 'nf-compute-20',   // UPGRADED: Was nf-compute-10
+          cpu: '1.0',              // UPGRADED: Was 0.1 -> minimum viable
+          memory: 2048,            // UPGRADED: Was 1024 -> 2GB minimum for stability
+          ephemeralStorage: 1024   // UPGRADED: Was 512
         };
     }
   }
