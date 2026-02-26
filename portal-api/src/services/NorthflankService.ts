@@ -180,7 +180,15 @@ export class NorthflankService {
           resources: {
             cpu: resourceConfig.cpu,
             memory: resourceConfig.memory
-          }
+          },
+          ports: [
+            {
+              name: "web",
+              internalPort: 3000,
+              protocol: "HTTP",
+              public: true
+            }
+          ]
         },
         runtimeEnvironment: {
           ANTHROPIC_API_KEY: config.anthropicApiKey,
